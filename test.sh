@@ -2,7 +2,7 @@ if [ ! -d instance ]; then
     echo "setup dashboard"
     git clone https://github.com/userdashboard/dashboard.git instance
     cd instance
-    npm install mysql mocha puppeteer@2.1.1 --no-save
+    npm install mysql2 mocha puppeteer@2.1.1 --no-save
 else 
     echo "existing dashboard"
     cd instance
