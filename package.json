@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "mysql": "^2.18.1"
+  },
+  "deprecated": false,
+  "description": "Use MySQL as storage for Dashboard",
+  "engine": {
+    "node": "12.16.3",
+    "npm": "6.14.4"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "name": "@userdashboard/storage-mysql",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/userdashboard/storage-mysql.git"
+  },
+  "version": "1.0.6"
+}
