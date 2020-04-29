@@ -5,6 +5,7 @@ if [ ! -d instance ]; then
 else 
     cd instance
 fi
+rm -rf node_modules/@userdashboard/storage-mysql
 mkdir -p node_modules/@userdashboard/storage-mysql
 cp ../index.js node_modules/@userdashboard/storage-mysql
 cp ../setup.sql node_modules/@userdashboard/storage-mysql
@@ -15,7 +16,7 @@ FAST_START=true \
 DASHBOARD_SERVER=http://localhost:9000 \
 DOMAIN=localhost \
 STORAGE_ENGINE=@userdashboard/storage-mysql \
-DATABASE_URL=mysql://root:root@localhost:3306/test  \
+DATABASE_URL=mysql://root:password@localhost:3306/test  \
 GENERATE_SITEMAP_TXT=false \
 GENERATE_API_TXT=false \
 npm test
