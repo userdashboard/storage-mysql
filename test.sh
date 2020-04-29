@@ -7,6 +7,7 @@ else
 fi
 mkdir -p node_modules/@userdashboard/storage-mysql
 cp ../index.js node_modules/@userdashboard/storage-mysql
+cp ../setup.sql node_modules/@userdashboard/storage-mysql
 cp -R ../src node_modules/@userdashboard/storage-mysql
 
 NODE_ENV=testing \
