@@ -20,7 +20,7 @@ FAST_START=true \
 DASHBOARD_SERVER=http://localhost:9000 \
 DOMAIN=localhost \
 STORAGE_ENGINE=@userdashboard/storage-mysql \
-DATABASE_URL=mysql://root:password@localhost:8888/test  \
+DATABASE_URL=mysql://root:password@127.0.0.1:8888/test  \
 GENERATE_SITEMAP_TXT=false \
 GENERATE_API_TXT=false \
 npm test
