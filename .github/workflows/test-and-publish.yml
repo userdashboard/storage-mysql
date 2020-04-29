@@ -24,8 +24,6 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Setup Dashboard
-      run: sudo apt-get install -y mysql-server
     - name: Test without encryption
       run: bash test.sh
     - name: Test with encryption
