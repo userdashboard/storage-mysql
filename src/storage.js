@@ -1,6 +1,10 @@
 const connectionString = process.env.DATABASE_URL || 'mysql://localhost:3306/testing'
-const mysql = require('mysql2/promise')
-const connection = mysql.createConnection(connectionString)
+let connection
+const pool = require('mysql2/promise').createPool(connectionString)
+pool.getConnection().then((newConnection) => {
+  connection = newConnection
+  process.on('exit', connection.release)
+})
 
 module.exports = {
   exists,
