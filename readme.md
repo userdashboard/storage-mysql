@@ -1,4 +1,5 @@
 # MySQL Storage for Dashboard
+![Test suite status](https://github.com/userdashboard/storage-mysql/workflows/test-and-publish/badge.svg?branch=master)
 
 Install this module to use [MySQL](https://dev.mysql.com/) for data storage.
 
