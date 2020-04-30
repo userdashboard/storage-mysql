@@ -19,16 +19,15 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
     - uses: actions/checkout@v1
-    - run: mysql -h 127.0.0.1 --port 8888 -u root -ppassword -e 'CREATE DATABASE IF NOT EXISTS test;'
+    - run: |
+        mysql -h 127.0.0.1 --port 8888 -u root -ppassword -e 'CREATE DATABASE IF NOT EXISTS test;'
+        sudo mysql -e "CREATE USER 'dashboard'@'localhost' IDENTIFIED BY 'password';"
+        sudo mysql -e "GRANT ALL PRIVILEGES ON *.* to 'dashboard'@'localhost' WITH GRANT OPTION;"
+        sudo mysql -e "CREATE DATABASE dashboard;""
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
       node-version: ${{ matrix.node-version }}
-    - name: Test without encryption
-      run: |
-        sudo mysql -e "CREATE USER 'dashboard'@'localhost' IDENTIFIED BY 'password';"
-        sudo mysql -e "GRANT ALL PRIVILEGES ON *.* to 'dashboard'@'localhost' WITH GRANT OPTION;"
-        sudo mysql -e "CREATE DATABASE dashboard;""
     - name: Test without encryption
       run: cd dashboard && npm test
       env:
