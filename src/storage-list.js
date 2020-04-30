@@ -1,70 +1,112 @@
 const connectionString = process.env.DATABASE_URL || 'mysql://localhost:3306/testing'
-let connection
-const pool = require('mysql2/promise').createPool(connectionString)
-pool.getConnection().then((newConnection) => {
-  connection = newConnection
-  process.on('exit', connection.release)
-})
+const mysql = require('mysql2')
+const pool = mysql.createPool(connectionString)
+const util = require('util')
 
 module.exports = {
-  add,
-  count,
-  exists,
-  list,
-  listAll,
-  remove
+  add: util.promisify(add),
+  count: util.promisify(count),
+  exists: util.promisify(exists),
+  list: util.promisify(list),
+  listAll: util.promisify(listAll),
+  remove: util.promisify(remove)
 }
 
-async function exists (path, objectid) {
-  const result = await connection.query('SELECT EXISTS(SELECT 1 FROM lists WHERE path=$1 AND objectid=$2)', [path, objectid])
-  return result && result.rows && result.rows.length ? result.rows[0].exists : false
+function exists (path, objectid, callback) {
+  return pool.query(mysql.format('SELECT EXISTS(SELECT 1 FROM lists WHERE path=? AND objectid=?) AS item', [path, objectid]), (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    if (!result || !result.length || !result[0] || result[0].item === undefined) {
+      return callback(new Error('unknown-error'))
+    }
+    return callback(null, result[0].item === 1)
+  })
 }
 
-async function add (path, objectid) {
-  const existing = await exists(path, objectid)
-  if (existing) {
-    return
-  }
-  await connection.query('INSERT INTO lists(path, objectid) VALUES ($1, $2)', [path, objectid])
+function add (path, objectid, callback) {
+  return exists(path, objectid, (error, existing) => {
+    if (error) {
+      return callback(error)
+    }
+    if (existing) {
+      return callback()
+    }
+    if (objectid === true || objectid === false) {
+      objectid = objectid.toString()
+    }
+    return pool.query(mysql.format('INSERT INTO lists(path, objectid) VALUES (?, ?)', [path, objectid]), (error, result) => {
+      if (error) {
+        return callback(error)
+      }
+      if (!result || !result.insertId) {
+        throw new Error('unknown-error')
+      }
+      return callback(null, result)
+    })
+  })
 }
 
-async function count (path) {
-  const result = await connection.query('SELECT COUNT(*) FROM lists WHERE path=$1', [path])
-  return result && result.rows && result.rows.length ? parseInt(result.rows[0].count, 10) : 0
+function count (path, callback) {
+  return pool.query(mysql.format('SELECT COUNT(*) AS counter FROM lists WHERE path=?', [path]), (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    if (!result || !result.length || !result[0] || result[0].counter === undefined) {
+      return callback(new Error('unknown-error'))
+    }
+    return callback(null, result[0].counter)
+  })
 }
 
-async function listAll (path) {
-  const result = await connection.query('SELECT objectid FROM lists WHERE path=$1 ORDER BY created DESC', [path])
-  if (!result || !result.rows || !result.rows.length) {
-    return
-  }
-  const data = []
-  for (const row of result.rows) {
-    data.push(row.objectid)
-  }
-  return data
+function listAll (path, callback) {
+  return pool.query(mysql.format('SELECT objectid FROM lists WHERE path=? ORDER BY id DESC', [path]), (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    if (!result || !result || !result.length) {
+      return callback()
+    }
+    const data = []
+    for (const row of result) {
+      data.push(row.objectid)
+    }
+    return callback(null, data)
+  })
 }
 
-async function list (path, offset, pageSize) {
+function list (path, offset, pageSize, callback) {
   offset = offset || 0
   if (pageSize === null || pageSize === undefined) {
     pageSize = global.pageSize
   }
   if (offset < 0) {
-    throw new Error('invalid-offset')
+    return callback(new Error('invalid-offset'))
   }
-  const result = await connection.query(`SELECT objectid FROM lists WHERE path=$1 ORDER BY created DESC LIMIT ${pageSize} OFFSET ${offset}`, [path])
-  if (!result.rows || !result.rows.length) {
-    return
-  }
-  const data = []
-  for (const row of result.rows) {
-    data.push(row.objectid)
-  }
-  return data
+  return pool.query(mysql.format(`SELECT objectid FROM lists WHERE path=? ORDER BY id DESC LIMIT ${pageSize} OFFSET ${offset}`, [path]), (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    if (!result || !result.length) {
+      return callback()
+    }
+    const data = []
+    for (const row of result) {
+      data.push(row.objectid)
+    }
+    return callback(null, data)
+  })
 }
 
-async function remove (path, objectid) {
+function remove (_, objectid, callback) {
   objectid = objectid.toString()
-  await connection.query('DELETE FROM lists WHERE objectid=$1', [objectid])
+  return pool.query(mysql.format('DELETE FROM lists WHERE objectid=?', [objectid]), (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    if (result.affectedRows === 0) {
+      return callback(new Error('unknown-error'))
+    }
+    return callback()
+  })
 }

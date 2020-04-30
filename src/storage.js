@@ -1,120 +1,164 @@
 const connectionString = process.env.DATABASE_URL || 'mysql://localhost:3306/testing'
-let connection
-const pool = require('mysql2/promise').createPool(connectionString)
-pool.getConnection().then((newConnection) => {
-  connection = newConnection
-  process.on('exit', connection.release)
-})
+const mysql = require('mysql2')
+const pool = mysql.createPool(connectionString)
+const util = require('util')
 
 module.exports = {
-  exists,
-  read,
-  readMany,
-  readImage,
-  write,
-  writeImage,
-  deleteFile
+  exists: util.promisify(exists),
+  read: util.promisify(read),
+  readMany: util.promisify(readMany),
+  readImage: util.promisify(readImage),
+  write: util.promisify(write),
+  writeImage: util.promisify(writeImage),
+  deleteFile: util.promisify(deleteFile)
 }
 
 if (process.env.NODE_ENV === 'testing') {
+  const flushAll = util.promisify((callback) => {
+    var connection2 = mysql.createConnection({ uri: connectionString, multipleStatements: true })
+    return connection2.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists;', () => {
+      const fs = require('fs')
+      const path = require('path')
+      let setupSQLFile = path.join(__dirname, 'setup.sql')
+      if (!fs.existsSync(setupSQLFile)) {
+        setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-mysql/setup.sql')
+      }
+      setupSQLFile = fs.readFileSync(setupSQLFile).toString()
+      return connection2.query(setupSQLFile, (error) => {
+        if (error) {
+          return callback(error)
+        }
+        connection2.destroy()
+        return callback()
+      })
+    })
+  })
   module.exports.flush = async () => {
-    await connection.query('DROP TABLE IF EXISTS objects')
-    await connection.query('DROP TABLE IF EXISTS lists')
-    const fs = require('fs')
-    const path = require('path')
-    let setupSQLFile = path.join(__dirname, 'setup.sql')
-    if (!fs.existsSync(setupSQLFile)) {
-      setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-mysql/setup.sql')
+    await flushAll()
+  }
+}
+
+function exists (file, callback) {
+  if (!file) {
+    return callback(new Error('invalid-file'))
+  }
+  const sql = mysql.format('SELECT EXISTS(SELECT 1 FROM objects WHERE path=?) AS item', [file])
+  return pool.query(sql, (error, result) => {
+    if (error) {
+      return callback(error)
     }
-    setupSQLFile = fs.readFileSync(setupSQLFile).toString()
-    await connection.query(setupSQLFile)
-  }
+    if (!result || !result.length || !result[0] || result[0].item === undefined) {
+      return callback(new Error('unknown-error'))
+    }
+    return callback(null, result[0].item === 1)
+  })
 }
 
-async function exists (file) {
+function deleteFile (file, callback) {
   if (!file) {
-    throw new Error('invalid-file')
+    return callback(new Error('invalid-file'))
   }
-  const result = await connection.query('SELECT EXISTS(SELECT 1 FROM objects WHERE fullpath=$1)', [file])
-  return result && result.rows && result.rows.length ? result.rows[0].exists : null
+  return pool.query(mysql.format('DELETE FROM objects WHERE path=?', [file]), (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    if (!result || result.affectedRows !== 1) {
+      return callback(new Error('unknown-error'))
+    }
+    return callback()
+  })
 }
 
-async function deleteFile (file) {
+function write (file, contents, callback) {
   if (!file) {
-    throw new Error('invalid-file')
-  }
-  const result = await connection.query('DELETE FROM objects WHERE fullpath=$1', [file])
-  return result ? result.count === 1 : null
-}
-
-async function write (file, contents) {
-  if (!file) {
-    throw new Error('invalid-file')
+    return callback(new Error('invalid-file'))
   }
   if (!contents && contents !== '') {
-    throw new Error('invalid-contents')
+    return callback(new Error('invalid-contents'))
   }
   if (typeof (contents) !== 'number' && typeof (contents) !== 'string') {
     contents = JSON.stringify(contents)
   }
-  contents = Buffer.isBuffer(contents) ? contents : Buffer.from(contents)
-  contents = `\\x${contents.toString('hex')}`
-  await connection.query('INSERT INTO objects(fullpath, blob) VALUES($1, $2) ON CONFLICT(fullpath) DO UPDATE SET blob=$2', [file, contents])
+  return pool.query(mysql.format('INSERT INTO objects(path, contents) VALUES(?, ?) ON DUPLICATE KEY UPDATE contents=VALUES(`contents`)', [file, contents]), (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    if (!result || (result.affectedRows !== 1 && result.affectedRows !== 2)) {
+      return callback(new Error('unknown-error'))
+    }
+    return callback()
+  })
 }
 
-async function writeImage (file, buffer) {
+function writeImage (file, buffer, callback) {
   if (!file) {
-    throw new Error('invalid-file')
+    return callback(new Error('invalid-file'))
   }
   if (!buffer || !buffer.length) {
-    throw new Error('invalid-buffer')
+    return callback(new Error('invalid-buffer'))
   }
-  const result = await connection.query('INSERT INTO objects(fullpath, blob) VALUES($1, $2) ON CONFLICT(fullpath) DO UPDATE SET blob=$2', [file, buffer])
-  return result ? result.count === 1 : null
+  return pool.query(mysql.format('INSERT INTO objects(path, contents) VALUES(?, ?) ON DUPLICATE KEY UPDATE contents=VALUES(`contents`)', [file, buffer]), (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    if (!result || result.affectedRows !== 1) {
+      return callback(new Error('unknown-error'))
+    }
+    return callback(null, result ? result.count === 1 : null)
+  })
 }
 
-async function read (file) {
+function read (file, callback) {
   if (!file) {
-    throw new Error('invalid-file')
+    return callback(new Error('invalid-file'))
   }
-  const result = await connection.query('SELECT * FROM objects WHERE fullpath=$1', [file])
-  let data
-  if (result && result.rows && result.rows.length && result.rows[0].blob) {
-    data = result.rows[0].blob.toString()
-  }
-  return data
+  return pool.query(mysql.format('SELECT * FROM objects WHERE path=?', [file]), (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    let data
+    if (result && result.length && result[0].contents && result[0].contents) {
+      data = result[0].contents.toString()
+    }
+    return callback(null, data)
+  })
 }
 
-async function readMany (path, files) {
+function readMany (path, files, callback) {
   if (!files || !files.length) {
-    throw new Error('invalid-files')
+    return callback(new Error('invalid-files'))
   }
-  const fullPaths = []
+  const paths = []
   for (const file of files) {
-    fullPaths.push(`${path}/${file}`)
+    paths.push(mysql.escape(`${path}/${file}`))
   }
-  const result = await connection.query('SELECT * FROM objects WHERE fullpath=ANY($1)', [fullPaths])
-  const data = {}
-  if (result && result.rows && result.rows.length) {
-    for (const row of result.rows) {
-      for (const file of files) {
-        if (row.fullpath === `${path}/${file}`) {
-          data[file] = row.blob.toString()
-          break
+  return pool.query('SELECT * FROM objects WHERE path IN (' + paths.join(',') + ')', (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    const data = {}
+    if (result && result.length) {
+      for (const row of result) {
+        for (const file of files) {
+          if (row.path === `${path}/${file}`) {
+            data[file] = row.contents.toString()
+            break
+          }
         }
       }
     }
-  }
-  return data
+    return callback(null, data)
+  })
 }
 
-async function readImage (file) {
+function readImage (file, callback) {
   if (!file) {
-    throw new Error('invalid-file')
+    return callback(new Error('invalid-file'))
   }
-  if (!file) {
-    throw new Error('invalid-file')
-  }
-  const result = await connection.query('SELECT * FROM objects WHERE fullpath=$1', [file])
-  return result ? result.rows[0] : null
+  return pool.query(mysql.format('SELECT * FROM objects WHERE path=?', [file]), (error, result) => {
+    if (error) {
+      return callback(error)
+    }
+    return callback(null, result ? result[0] : null)
+  })
 }
