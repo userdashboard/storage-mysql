@@ -104,7 +104,7 @@ function remove (_, objectid, callback) {
     if (error) {
       return callback(error)
     }
-    if (result.affectedRows === 0) {
+    if (!result) {
       return callback(new Error('unknown-error'))
     }
     return callback()
