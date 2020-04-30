@@ -22,7 +22,7 @@ jobs:
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
-      node-version: ${{ matrix.node-version }}
+        node-version: ${{ matrix.node-version }}
     - name: Setup MySQL
       run: |
         mysql -h 127.0.0.1 --port 8888 -u root -ppassword -e 'CREATE DATABASE IF NOT EXISTS test;'
