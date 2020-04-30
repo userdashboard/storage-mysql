@@ -31,11 +31,11 @@ jobs:
         sudo mysql -h 127.0.0.1 --port 8888 -u root -ppassword -e "CREATE DATABASE dashboard;"
     - name: Setup dependencies
       run: |
-        git clone https://github.com/userdashboard/dashboard.git instance
-        cd instance
+        git clone https://github.com/userdashboard/dashboard.git /tmp/instance
+        cd /tmp/instance
         npm install mysql2 mocha puppeteer@2.1.1 --no-save
     - name: Test without encryption
-      run: cd instance && npm test
+      run: cd /tmp/instance && npm test
       env:
         NODE_ENV: testing
         FAST_START: "true"
@@ -46,7 +46,7 @@ jobs:
         GENERATE_SITEMAP_TXT: "false"
         GENERATE_API_TXT: "false"
     - name: Test with encryption
-      run: cd instance && npm test
+      run: cd /tmp/instance && npm test
       env:
         NODE_ENV: testing
         FAST_START: true
