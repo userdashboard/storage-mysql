@@ -1,14 +1,6 @@
 const connectionString = process.env.DATABASE_URL || 'mysql://localhost:3306/testing'
 const mysql = require('mysql2/promise')
 const connection = mysql.createConnection(connectionString)
-connection.connect((error) => {
-  if (error) {
-    if (process.env.DEBUG_ERRORS) {
-      console.error('[storage-mysql]', error)
-    }
-    throw error
-  }
-})
 
 module.exports = {
   exists,
