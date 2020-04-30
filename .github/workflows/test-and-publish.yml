@@ -25,7 +25,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Setup MySQL
       run: |
-        sudo mysql -h 127.0.0.1 --port 8888 -u root -ppassword -e 'CREATE DATABASE IF NOT EXISTS test;'
         sudo mysql -h 127.0.0.1 --port 8888 -u root -ppassword -e "CREATE USER 'dashboard'@'localhost' IDENTIFIED BY 'password';"
         sudo mysql -h 127.0.0.1 --port 8888 -u root -ppassword -e "GRANT ALL PRIVILEGES ON *.* to 'dashboard'@'localhost' WITH GRANT OPTION;"
         sudo mysql -h 127.0.0.1 --port 8888 -u root -ppassword -e "CREATE DATABASE dashboard;"
