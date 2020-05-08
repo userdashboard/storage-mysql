@@ -5,8 +5,13 @@ Install this module to use [MySQL](https://dev.mysql.com/) for data storage.
 
 You will need to launch with additional configuration variables:
 
-    STORAGE_ENGINE=@userdashboard/storage-mysql
+    STORAGE=@userdashboard/storage-mysql
     DATABASE_URL=mysql://user:password@localhost:3306/database 
+
+You can use this storage for a module:
+
+    MODULE_NAME_STORAGE=@userdashboard/storage-mysql
+    MODULE_NAME_DATABASE_URL=mysql://user:password@localhost:3306/database 
 
 To test this module use [Dashboard](https://github.com/userdashboard/dashboard)'s test suite configured with this storage engine.
 
