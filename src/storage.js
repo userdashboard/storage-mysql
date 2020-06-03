@@ -127,7 +127,7 @@ module.exports = {
     }
     if (process.env.NODE_ENV === 'testing') {
       container.flush = util.promisify((callback) => {
-        var connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
+        const connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
         return connection2.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists;', () => {
           const fs = require('fs')
           const path = require('path')
