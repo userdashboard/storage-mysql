@@ -126,23 +126,21 @@ module.exports = {
       })
     }
     if (process.env.NODE_ENV === 'testing') {
+      const fs = require('fs')
+      const path = require('path')
+      let setupSQLFile = path.join(__dirname, 'setup.sql')
+      if (!fs.existsSync(setupSQLFile)) {
+        setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-mysql/setup.sql')
+      }
+      setupSQLFile = fs.readFileSync(setupSQLFile).toString()
       container.flush = util.promisify((callback) => {
         const connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
-        return connection2.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists;', () => {
-          const fs = require('fs')
-          const path = require('path')
-          let setupSQLFile = path.join(__dirname, 'setup.sql')
-          if (!fs.existsSync(setupSQLFile)) {
-            setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-mysql/setup.sql')
+        return connection2.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile, (error) => {
+          if (error) {
+            return callback(error)
           }
-          setupSQLFile = fs.readFileSync(setupSQLFile).toString()
-          return connection2.query(setupSQLFile, (error) => {
-            if (error) {
-              return callback(error)
-            }
-            connection2.destroy()
-            return callback()
-          })
+          connection2.destroy()
+          return callback()
         })
       })
     }
