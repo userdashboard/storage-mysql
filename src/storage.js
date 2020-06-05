@@ -11,13 +11,10 @@ module.exports = {
       setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-mysql/setup.sql')
     }
     setupSQLFile = fs.readFileSync(setupSQLFile).toString()
-    const pool = mysql.createPool(databaseURL)
-    pool.getConnection((error, connnection) => {
-      if (error) {
-        throw error
-      }
-      connnection.query(setupSQLFile)
-      pool.releaseConnection(connnection)
+    const connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
+    return connection2.query(setupSQLFile, () => {
+      connection2.destroy()
+      const pool = mysql.createPool(databaseURL)
       const container = {
         exists: util.promisify((file, callback) => {
           if (!file) {
