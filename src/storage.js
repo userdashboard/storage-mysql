@@ -6,7 +6,7 @@ const util = require('util')
 module.exports = {
   setup: async (moduleName) => {
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'mysql://localhost:3306/testing'
-    const pool = mysql.createPool(databaseURL)
+    const pool = await mysql.createPool(databaseURL)
     let setupSQLFile = path.join(__dirname, 'setup.sql')
     if (!fs.existsSync(setupSQLFile)) {
       setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-mysql/setup.sql')
@@ -134,16 +134,11 @@ module.exports = {
       })
     }
     if (process.env.NODE_ENV === 'testing') {
-      container.flush = util.promisify((callback) => {
-        const connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
-        return connection2.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile, (error) => {
-          if (error) {
-            return callback(error)
-          }
-          connection2.destroy()
-          return callback()
-        })
-      })
+      container.flush = async () => {
+        const connection2 = await mysql.createConnection({ uri: databaseURL, multipleStatements: true })
+        await connection2.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile)
+        connection2.destroy()
+      }
     }
     return container
   }
