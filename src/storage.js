@@ -5,6 +5,10 @@ const util = require('util')
 
 module.exports = {
   setup: util.promisify((moduleName, callback) => {
+    if (!callback) {
+      callback = moduleName
+      moduleName = null
+    }
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'mysql://localhost:3306/testing'
     let setupSQLFile = path.join(__dirname, 'setup.sql')
     if (!fs.existsSync(setupSQLFile)) {
