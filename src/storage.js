@@ -23,7 +23,7 @@ module.exports = {
     return connection2.query(setupSQLFile, (error) => {
       if (error) {
         Log.error('error setting up', error)
-        return callback(new Error('unkonwn-error'))
+        return callback(new Error('unknown-error'))
       }
       connection2.destroy()
       const pool = mysql.createPool(databaseURL)
