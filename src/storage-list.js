@@ -32,7 +32,7 @@ module.exports = {
         const commands = []
         const values = []
         for (const path in items) {
-          commands.push('INSERT INTO lists(path, objectid) VALUES ($?, $?)')
+          commands.push('INSERT INTO lists(path, objectid) VALUES (?, ?)')
           values.push(path, items[path])
         }
         return pool.query(commands.join('; '), values, (error) => {
