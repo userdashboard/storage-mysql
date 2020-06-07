@@ -11,8 +11,20 @@ module.exports = {
       setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-mysql/setup.sql')
     }
     setupSQLFile = fs.readFileSync(setupSQLFile).toString()
+    const dashboardPath1 = path.join(global.applicationPath, 'node_modules/@userdashboard/dashboard/src/log.js')
+    let Log
+    if (fs.existsSync(dashboardPath1)) {
+      Log = require(dashboardPath1)('postgresql-list')
+    } else {
+      const dashboardPath2 = path.join(global.applicationPath, 'src/log.js')
+      Log = require(dashboardPath2)('postgresql-list')
+    }
     const connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
-    return connection2.query(setupSQLFile, () => {
+    return connection2.query(setupSQLFile, (error) => {
+      if (error) {
+        Log.error('error setting up', error)
+        return callback(new Error('unkonwn-error'))
+      }
       connection2.destroy()
       const pool = mysql.createPool(databaseURL)
       const container = {
@@ -23,7 +35,8 @@ module.exports = {
           const sql = mysql.format('SELECT EXISTS(SELECT 1 FROM objects WHERE path=?) AS item', [file])
           return pool.query(sql, (error, result) => {
             if (error) {
-              return callback(error)
+              Log.error('error checking exists', error)
+              return callback(new Error('unknown-error'))
             }
             if (!result || !result.length || !result[0] || result[0].item === undefined) {
               return callback(new Error('unknown-error'))
@@ -37,7 +50,8 @@ module.exports = {
           }
           return pool.query(mysql.format('SELECT * FROM objects WHERE path=?', [file]), (error, result) => {
             if (error) {
-              return callback(error)
+              Log.error('error reading', error)
+              return callback(new Error('unknown-error'))
             }
             let data
             if (result && result.length && result[0].contents && result[0].contents) {
@@ -56,7 +70,8 @@ module.exports = {
           }
           return pool.query('SELECT * FROM objects WHERE path IN (' + paths.join(',') + ')', (error, result) => {
             if (error) {
-              return callback(error)
+              Log.error('error reading many', error)
+              return callback(new Error('unknown-error'))
             }
             const data = {}
             if (result && result.length) {
@@ -78,7 +93,8 @@ module.exports = {
           }
           return pool.query(mysql.format('SELECT * FROM objects WHERE path=?', [file]), (error, result) => {
             if (error) {
-              return callback(error)
+              Log.error('error reading binary', error)
+              return callback(new Error('unknown-error'))
             }
             return callback(null, result ? result[0] : null)
           })
@@ -95,7 +111,8 @@ module.exports = {
           }
           return pool.query(mysql.format('INSERT INTO objects(path, contents) VALUES(?, ?) ON DUPLICATE KEY UPDATE contents=VALUES(`contents`)', [file, contents]), (error, result) => {
             if (error) {
-              return callback(error)
+              Log.error('error writing', error)
+              return callback(new Error('unknown-error'))
             }
             if (!result || (result.affectedRows !== 1 && result.affectedRows !== 2)) {
               return callback(new Error('unknown-error'))
@@ -112,7 +129,8 @@ module.exports = {
           }
           return pool.query(mysql.format('INSERT INTO objects(path, contents) VALUES(?, ?) ON DUPLICATE KEY UPDATE contents=VALUES(`contents`)', [file, buffer]), (error, result) => {
             if (error) {
-              return callback(error)
+              Log.error('error writing binary', error)
+              return callback(new Error('unknown-error'))
             }
             if (!result || result.affectedRows !== 1) {
               return callback(new Error('unknown-error'))
@@ -126,9 +144,7 @@ module.exports = {
           }
           return pool.query(mysql.format('DELETE FROM objects WHERE path=?', [file]), (error, result) => {
             if (error) {
-              return callback(error)
-            }
-            if (!result || result.affectedRows !== 1) {
+              Log.error('error deleting', error)
               return callback(new Error('unknown-error'))
             }
             return callback()
@@ -138,7 +154,11 @@ module.exports = {
       if (process.env.NODE_ENV === 'testing') {
         container.flush = util.promisify((callback) => {
           const connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
-          return connection2.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile, () => {
+          return connection2.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile, (error) => {
+            if (error) {
+              Log.error('error flushing', error)
+              return callback(new Error('unknown-error'))
+            }
             connection2.destroy()
             return callback()
           })
