@@ -18,10 +18,10 @@ module.exports = {
     const dashboardPath1 = path.join(global.applicationPath, 'node_modules/@userdashboard/dashboard/src/log.js')
     let Log
     if (fs.existsSync(dashboardPath1)) {
-      Log = require(dashboardPath1)('postgresql-list')
+      Log = require(dashboardPath1)('mysql')
     } else {
       const dashboardPath2 = path.join(global.applicationPath, 'src/log.js')
-      Log = require(dashboardPath2)('postgresql-list')
+      Log = require(dashboardPath2)('mysql')
     }
     const connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
     return connection2.query(setupSQLFile, (error) => {
