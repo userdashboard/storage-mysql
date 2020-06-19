@@ -106,9 +106,9 @@ module.exports = {
           return callback(null, data)
         })
       }),
-      remove: util.promisify((_, objectid, callback) => {
+      remove: util.promisify((path, objectid, callback) => {
         objectid = objectid.toString()
-        return pool.query(mysql.format('DELETE FROM lists WHERE objectid=?', [objectid]), (error, result) => {
+        return pool.query(mysql.format('DELETE FROM lists WHERE path=? AND objectid=?', [path, objectid]), (error, result) => {
           if (error) {
             Log.error('error removing', error)
             return callback(new Error('unknown-error'))
