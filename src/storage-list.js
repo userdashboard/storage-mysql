@@ -35,6 +35,7 @@ module.exports = {
           commands.push('INSERT INTO lists(path, objectid) VALUES (?, ?)')
           values.push(path, items[path])
         }
+        Log.info(commands, values)
         return pool.query(commands.join('; '), values, (error) => {
           if (error) {
             Log.error('error adding many', error)
