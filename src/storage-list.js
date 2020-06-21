@@ -32,11 +32,14 @@ module.exports = {
         const commands = []
         const values = []
         for (const path in items) {
-          commands.push('INSERT INTO lists(path, objectid) VALUES (?, ?)')
+          if (!commands.length) {
+            commands.push('INSERT INTO lists(path, objectid) VALUES (?, ?)')
+          } else {
+            commands.push('(?, ?)')
+          }
           values.push(path, items[path])
         }
-        Log.info(commands, values)
-        return pool.query(commands.join('; '), values, (error) => {
+        return pool.query(commands.join(', '), values, (error) => {
           if (error) {
             Log.error('error adding many', error)
             return callback(new Error('unknown-error'))
