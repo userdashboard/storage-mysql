@@ -158,7 +158,7 @@ module.exports = {
       if (process.env.NODE_ENV === 'testing') {
         container.flush = util.promisify((callback) => {
           const connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
-          return connection2.query('DELETE FROM objects; DROP FROM lists;', (error) => {
+          return connection2.query('DELETE FROM objects; DELETE FROM lists;', (error) => {
             if (error) {
               Log.error('error flushing', error)
               return callback(new Error('unknown-error'))
