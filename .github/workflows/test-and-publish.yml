@@ -24,22 +24,14 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Set up as module
       run: |
-        HERE=`pwd`
-        mkdir /tmp/project
-        cd /tmp/project
-        npm init -y
-        npm install faker puppeteer@2.1.1 @userdashboard/dashboard @userdashboard/storage-mysql
+        npm install faker puppeteer@2.1.1 @userdashboard/dashboard @userdashboard/storage-mysql --no-save
         npm install -g mocha
         rm node_modules/@userdashboard/storage-mysql/*.js
         rm -rf node_modules/@userdashboard/storage-mysql/src
-        cp $HERE/*.js node_modules/@userdashboard/storage-mysql
-        cp -R $HERE/src/ node_modules/@userdashboard/storage-mysql/src/
-        echo "global.applicationPath = __dirname" > main.js
+        cp *.js node_modules/@userdashboard/storage-mysql
+        cp -R src/ node_modules/@userdashboard/storage-mysql/src/
     - name: Test unencrypted MySQL storage
-      run: |
-        cd /tmp/project 
-        mocha --file main.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js"
-        cd $HERE
+      run: mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js"
       env:
         NODE_ENV: testing
         FAST_START: "true"
@@ -51,10 +43,7 @@ jobs:
         GENERATE_API_TXT: "false"
         LOG_LEVEL: "info,error,warn,log"
     - name: Test encrypted MySQL storage
-      run: |
-        cd /tmp/project 
-        mocha --file main.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js"
-        cd $HERE
+      run: mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js"
       env:
         NODE_ENV: testing
         FAST_START: true
@@ -68,7 +57,6 @@ jobs:
         ENCRYPTION_SECRET_IV: "1234123412341234"
     - name: Increase NPM version
       run: |
-        cd $HERE
         git config --global user.name "${{ secrets.NAME }}"
         git config --global user.email "${{ secrets.EMAIL }}"
         npm version patch
