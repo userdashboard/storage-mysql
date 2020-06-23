@@ -24,9 +24,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Set up as module
       run: |
-        npm install faker puppeteer@2.1.1 @userdashboard/dashboard @userdashboard/storage-mysql --no-save
+        npm install faker puppeteer@2.1.1 @userdashboard/dashboard --no-save
         npm install -g mocha
-        rm node_modules/@userdashboard/storage-mysql/*.js
+        mkdir -p node_modules/@userdashboard/storage-mysql/
         rm -rf node_modules/@userdashboard/storage-mysql/src
         cp *.js node_modules/@userdashboard/storage-mysql
         cp -R src/ node_modules/@userdashboard/storage-mysql/src/
