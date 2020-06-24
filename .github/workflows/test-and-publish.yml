@@ -43,7 +43,7 @@ jobs:
         cp *.js node_modules/@userdashboard/storage-mysql
         cp *.sql node_modules/@userdashboard/storage-mysql
         cp -R src/ node_modules/@userdashboard/storage-mysql/src/
-        cd package.json package.json.old
+        cp package.json package.json.old
         PACKAGE=`cat package.json`
         PACKAGE=${PACKAGE/\"description\"\: \"\"/\"dashboard\": \{ \"modules\"\: \[\"@userdashboard/organizations\"\] \}}
         echo $PACKAGE > package.json
