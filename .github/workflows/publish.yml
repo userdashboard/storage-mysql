@@ -88,7 +88,7 @@ jobs:
         fi
       env:
         NODE_ENV: testing
-        STORAGE: @userdashboard/storage-mysql
+        STORAGE: "@userdashboard/storage-mysql"
         DATABASE_URL: "mysql://root:password@127.0.0.1:8888/dashboard"
         NODE_OPTIONS: --preserve-symlinks
     - name: Test as Dashboard storage with module on other type
@@ -100,9 +100,9 @@ jobs:
         fi
       env:
         NODE_ENV: testing
-        STORAGE: @userdashboard/storage-mysql
+        STORAGE: "@userdashboard/storage-mysql"
         DATABASE_URL: "mysql://root:password@127.0.0.1:8888/dashboard"
-        ORGANIZATIONS_STORAGE: @userdashboard/storage-redis
+        ORGANIZATIONS_STORAGE: "@userdashboard/storage-redis"
         ORGANIZATIONS_REDIS_URL: redis://localhost:6379
         NODE_OPTIONS: --preserve-symlinks
     - name: Test as module storage with Dashboard on other type
@@ -114,9 +114,9 @@ jobs:
         fi
       env:
         NODE_ENV: testing
-        STORAGE: @userdashboard/storage-redis
+        STORAGE: "@userdashboard/storage-redis"
         REDIS_URL: redis://localhost:6379
-        ORGANIZATIONS_STORAGE: @userdashboard/storage-mysql
+        ORGANIZATIONS_STORAGE: "@userdashboard/storage-mysql"
         ORGANIZATIONS_DATABASE_URL: "mysql://root:password@127.0.0.1:8888/dashboard"
         NODE_OPTIONS: --preserve-symlinks
     - name: Test as Dashboard and module storage using separate servers
@@ -128,9 +128,9 @@ jobs:
         fi
       env:
         NODE_ENV: testing
-        STORAGE: @userdashboard/storage-mysql
+        STORAGE: "@userdashboard/storage-mysql"
         DATABASE_URL: "mysql://root:password@127.0.0.1:8888/dashboard"
-        ORGANIZATIONS_STORAGE: @userdashboard/storage-mysql
+        ORGANIZATIONS_STORAGE: "@userdashboard/storage-mysql"
         ORGANIZATIONS_DATABASE_URL: "mysql://root:password@127.0.0.1:8887/dashboard"
         NODE_OPTIONS: --preserve-symlinks
     - name: Publish to Github
