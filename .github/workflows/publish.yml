@@ -87,6 +87,7 @@ jobs:
         if [[ "$TESTS" == *" 1)"* ]]; then
           exit 1
         fi
+      working-directory: /tmp/project
       env:
         NODE_ENV: testing
         STORAGE: "@userdashboard/storage-mysql"
@@ -99,6 +100,7 @@ jobs:
         if [[ "$TESTS" == *" 1)"* ]]; then
           exit 1
         fi
+      working-directory: /tmp/project
       env:
         NODE_ENV: testing
         STORAGE: "@userdashboard/storage-mysql"
@@ -113,6 +115,7 @@ jobs:
         if [[ "$TESTS" == *" 1)"* ]]; then
           exit 1
         fi
+      working-directory: /tmp/project
       env:
         NODE_ENV: testing
         STORAGE: "@userdashboard/storage-redis"
@@ -127,6 +130,7 @@ jobs:
         if [[ "$TESTS" == *" 1)"* ]]; then
           exit 1
         fi
+      working-directory: /tmp/project
       env:
         NODE_ENV: testing
         STORAGE: "@userdashboard/storage-mysql"
