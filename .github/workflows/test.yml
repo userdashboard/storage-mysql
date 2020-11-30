@@ -30,7 +30,7 @@ jobs:
         node-version: 14
     - uses: zhulik/redis-action@1.1.0
       with:
-        redis version: '5'
+        redis version: 5
         number of databases: 1
     - name: Optionally install Chromium via APT instead of puppeteer
       run: |
@@ -54,7 +54,7 @@ jobs:
         npm init -y
         npm install "$HERE" @userdashboard/dashboard @userdashboard/organizations @userdashboard/storage-redis mocha faker puppeteer
         PACKAGE=`cat package.json`
-        PACKAGE=${PACKAGE/\"deprecated\"\: false/\"dashboard\": \{ \"modules\"\: \[\"@userdashboard/organizations\"\] \}}
+        PACKAGE=${PACKAGE/\"author\"\: \"\"/\"dashboard\": \{ \"modules\"\: \[\"@userdashboard/organizations\"\] \}}
         echo $PACKAGE > package.json
         echo "global.applicationPath = __dirname" > main.js
     - name: Test as only storage for Dashboard and modules
@@ -66,9 +66,9 @@ jobs:
         fi
       env:
         NODE_ENV: testing
-        STORAGE: "@userdashboard/storage-mysql"
+        STORAGE: @userdashboard/storage-mysql
         DATABASE_URL: "mysql://root:password@127.0.0.1:8888/dashboard"
-        NODE_OPTIONS: "--preserve-symlinks"
+        NODE_OPTIONS: --preserve-symlinks
     - name: Test as Dashboard storage with module on other type
       run: |
         ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z]/node_modules | sort -k5.1,8.1 -t /) | tee tests.txt
@@ -78,11 +78,11 @@ jobs:
         fi
       env:
         NODE_ENV: testing
-        STORAGE: "@userdashboard/storage-mysql"
+        STORAGE: @userdashboard/storage-mysql
         DATABASE_URL: "mysql://root:password@127.0.0.1:8888/dashboard"
-        ORGANIZATIONS_STORAGE: "@userdashboard/storage-redis"
-        ORGANIZATIONS_REDIS_URL: "redis://localhost:6379"
-        NODE_OPTIONS: "--preserve-symlinks"
+        ORGANIZATIONS_STORAGE: @userdashboard/storage-redis
+        ORGANIZATIONS_REDIS_URL: redis://localhost:6379
+        NODE_OPTIONS: --preserve-symlinks
     - name: Test as module storage with Dashboard on other type
       run: |
         ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z]/node_modules | sort -k5.1,8.1 -t /) | tee tests.txt
@@ -92,11 +92,11 @@ jobs:
         fi
       env:
         NODE_ENV: testing
-        STORAGE: "@userdashboard/storage-redis"
-        REDIS_URL: "redis://localhost:6379"
-        ORGANIZATIONS_STORAGE: "@userdashboard/storage-mysql"
+        STORAGE: @userdashboard/storage-redis
+        REDIS_URL: redis://localhost:6379
+        ORGANIZATIONS_STORAGE: @userdashboard/storage-mysql
         ORGANIZATIONS_DATABASE_URL: "mysql://root:password@127.0.0.1:8888/dashboard"
-        NODE_OPTIONS: "--preserve-symlinks"
+        NODE_OPTIONS: --preserve-symlinks
     - name: Test as Dashboard and module storage using separate servers
       run: |
         ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z]/node_modules | sort -k5.1,8.1 -t /) | tee tests.txt
@@ -106,11 +106,11 @@ jobs:
         fi
       env:
         NODE_ENV: testing
-        STORAGE: "@userdashboard/storage-mysql"
+        STORAGE: @userdashboard/storage-mysql
         DATABASE_URL: "mysql://root:password@127.0.0.1:8888/dashboard"
-        ORGANIZATIONS_STORAGE: "@userdashboard/storage-mysql"
+        ORGANIZATIONS_STORAGE: @userdashboard/storage-mysql
         ORGANIZATIONS_DATABASE_URL: "mysql://root:password@127.0.0.1:8887/dashboard"
-        NODE_OPTIONS: "--preserve-symlinks"
+        NODE_OPTIONS: --preserve-symlinks
     - name: Publish to Github
       uses: stefanzweifel/git-auto-commit-action@v4.1.6
       with:
