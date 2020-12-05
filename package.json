@@ -1,7 +1,6 @@
 {
   "dependencies": {
-    "mysql2": "^2.2.5",
-    "@userdashboard/dashboard": ">=1"
+    "mysql2": "^2.2.5"
   },
   "deprecated": false,
   "description": "Use MySQL as storage for Dashboard",
