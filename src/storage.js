@@ -1,6 +1,5 @@
 const fs = require('fs')
 const mysql = require('mysql2')
-const path = require('path')
 const util = require('util')
 
 module.exports = {
@@ -10,19 +9,8 @@ module.exports = {
       moduleName = null
     }
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'mysql://localhost:3306/testing'
-    let setupSQLFile = path.join(__dirname, 'setup.sql')
-    if (!fs.existsSync(setupSQLFile)) {
-      setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-mysql/setup.sql')
-    }
-    setupSQLFile = fs.readFileSync(setupSQLFile).toString()
-    const dashboardPath1 = path.join(global.applicationPath, 'node_modules/@userdashboard/dashboard/src/log.js')
-    let Log
-    if (fs.existsSync(dashboardPath1)) {
-      Log = require(dashboardPath1)('mysql')
-    } else {
-      const dashboardPath2 = path.join(global.applicationPath, 'src/log.js')
-      Log = require(dashboardPath2)('mysql')
-    }
+    const setupSQLFile = fs.readFileSync('./setup.sql').toString()
+    const Log = require('@userdashboard/dashboard/src/log.js')('mysql')
     const connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
     return connection2.query(setupSQLFile, (error) => {
       if (error) {

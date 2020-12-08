@@ -1,5 +1,3 @@
-const fs = require('fs')
-const path = require('path')
 const mysql = require('mysql2')
 const util = require('util')
 
@@ -7,14 +5,7 @@ module.exports = {
   setup: async (storage, moduleName) => {
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'mysql://localhost:3306/testing'
     const pool = mysql.createPool(({ uri: databaseURL, multipleStatements: true }))
-    const dashboardPath1 = path.join(global.applicationPath, 'node_modules/@userdashboard/dashboard/src/log.js')
-    let Log
-    if (fs.existsSync(dashboardPath1)) {
-      Log = require(dashboardPath1)('mysql-list')
-    } else {
-      const dashboardPath2 = path.join(global.applicationPath, 'src/log.js')
-      Log = require(dashboardPath2)('mysql-list')
-    }
+    const Log = require('@userdashboard/dashboard/src/log.js')('mysql-list')
     const container = {
       add: util.promisify((path, objectid, callback) => {
         if (objectid === true || objectid === false) {
