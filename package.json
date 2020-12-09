@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "mysql2": "^2.2.5"
-  }, 
+  },
   "peerDependencies": {
     "@userdashboard/dashboard": "1.x - latest"
   },
@@ -24,5 +24,5 @@
     "type": "git",
     "url": "git://github.com/userdashboard/storage-mysql.git"
   },
-  "version": "1.0.17"
+  "version": "1.0.18"
 }
