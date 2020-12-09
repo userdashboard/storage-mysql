@@ -1,4 +1,3 @@
-const fs = require('fs')
 const mysql = require('mysql2')
 const util = require('util')
 
@@ -9,10 +8,23 @@ module.exports = {
       moduleName = null
     }
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'mysql://localhost:3306/testing'
-    const setupSQLFile = fs.readFileSync('./setup.sql').toString()
+    const setupSQL = `CREATE TABLE IF NOT EXISTS lists (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      path VARCHAR(255),
+      objectid VARCHAR(255),
+      PRIMARY KEY (id),
+      INDEX(objectid),
+      INDEX(path)
+    );
+    
+    CREATE TABLE IF NOT EXISTS objects (
+      path VARCHAR(255),
+      contents BLOB,
+      PRIMARY KEY (path)
+    );`
     const Log = require('@userdashboard/dashboard/src/log.js')('mysql')
     const connection2 = mysql.createConnection({ uri: databaseURL, multipleStatements: true })
-    return connection2.query(setupSQLFile, (error) => {
+    return connection2.query(setupSQL, (error) => {
       if (error) {
         Log.error('error setting up', error)
         return callback(new Error('unknown-error'))
