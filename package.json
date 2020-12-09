@@ -1,6 +1,9 @@
 {
   "dependencies": {
     "mysql2": "^2.2.5"
+  }, 
+  "peerDependencies": {
+    "@userdashboard/dashboard": "1.0.0 - 9999.9999.9999"
   },
   "deprecated": false,
   "description": "Use MySQL as storage for Dashboard",
